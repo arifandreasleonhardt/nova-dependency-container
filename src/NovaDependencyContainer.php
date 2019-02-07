@@ -49,6 +49,20 @@ class NovaDependencyContainer extends Field
     }
 
     /**
+     * Adds a dependency
+     *
+     * @param $field
+     * @param $value
+     * @return $this
+     */
+    public function dependsOnRegex($field, $pattern)
+    {
+        return $this->withMeta([
+            'dependencies' => array_merge($this->meta['dependencies'], [['field' => $field, 'regex' => $pattern]])
+        ]);
+    }
+
+    /**
      *
      *
      * @param $field
@@ -70,11 +84,15 @@ class NovaDependencyContainer extends Field
         parent::resolveForDisplay($resource, $attribute);
 
         foreach ($this->meta['dependencies'] as $index => $dependency) {
-            if(array_key_exists('notEmpty', $dependency) && ! empty($resource->{$dependency['field']})) {
+            if (array_key_exists('notEmpty', $dependency) && !empty($resource->{$dependency['field']})) {
                 $this->meta['dependencies'][$index]['satisfied'] = true;
             }
 
-            if(array_key_exists('value', $dependency) && $dependency['value'] == $resource->{$dependency['field']}) {
+            if (array_key_exists('value', $dependency) && $dependency['value'] == $resource->{$dependency['field']}) {
+                $this->meta['dependencies'][$index]['satisfied'] = true;
+            }
+
+            if (array_key_exists('regex', $dependency) && preg_match('/' . $dependency['regex'] . '/', $resource->{$dependency['field']})) {
                 $this->meta['dependencies'][$index]['satisfied'] = true;
             }
         }
